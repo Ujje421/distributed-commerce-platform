@@ -42,6 +42,7 @@ export * from './interfaces/service-health.interface';
 export * from './utils/correlation-id';
 export * from './utils/hash';
 export * from './utils/idempotency';
+export * from './utils/user-header.middleware';
 
 // --- Constants ---
 export * from './constants/roles';

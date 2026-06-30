@@ -6,7 +6,7 @@ export interface IAuthenticatedUser {
   userId: string;
   email: string;
   roles: string[];
-  sessionId: string;
+  sessionId?: string;
   iat?: number;
   exp?: number;
 }

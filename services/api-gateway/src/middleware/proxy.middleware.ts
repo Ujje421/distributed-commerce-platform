@@ -45,6 +45,13 @@ export class ProxyMiddleware implements NestMiddleware {
         if (correlationId) {
           proxyReq.setHeader('x-correlation-id', correlationId);
         }
+
+        // Forward User Payload if authenticated by JwtAuthMiddleware
+        if (req.user) {
+          proxyReq.setHeader('x-user-id', req.user.id);
+          proxyReq.setHeader('x-user-email', req.user.email);
+          proxyReq.setHeader('x-user-roles', req.user.roles.join(','));
+        }
       },
       onError: (err, req, res: any) => {
         this.logger.error(`Proxy Error: ${err.message}`, err.stack);
