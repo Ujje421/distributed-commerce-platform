@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { SERVICE_PORTS } from '@ecommerce/common';
 import { initTracing } from '@ecommerce/observability';
 
 async function bootstrap() {
@@ -14,6 +13,6 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   await app.listen(port);
-  logger.log(service.name + " is running on: http://localhost:" + port);
+  logger.log(`Inventory Service is running on: http://localhost:${port}`);
 }
 bootstrap();

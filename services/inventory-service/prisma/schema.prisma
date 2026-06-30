@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -7,19 +8,52 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model InventoryItem {
+  id               String   @id @default(uuid())
+  productId        String   // References Product.id in Product Catalog
+  sku              String   @unique
+  quantity         Int      @default(0)
+  reservedQuantity Int      @default(0)
+  warehouseId      String   @default("WH-1")
+  version          Int      @default(1) // Used for optimistic locking
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  reservations     InventoryReservation[]
+  
+  @@index([productId])
+  @@map("inventory_items")
+}
+
+model InventoryReservation {
+  id              String        @id @default(uuid())
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  orderId         String        // ID of the order reserving the stock
+  quantity        Int
+  status          String        @default("RESERVED") // RESERVED, CONSUMED, RELEASED
+  expiresAt       DateTime      // When the reservation automatically releases if not consumed
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([expiresAt, status])
+  @@map("inventory_reservations")
+}
+
 model Outbox {
-  id            String    @id @default(uuid())
-  eventType     String
-  topic         String
-  partitionKey  String
-  payload       String    @db.Text
-  correlationId String
-  status        String    @default("PENDING")
-  retryCount    Int       @default(0)
-  maxRetries    Int       @default(5)
-  error         String?   @db.Text
-  createdAt     DateTime  @default(now())
-  processedAt   DateTime?
+  id          String   @id @default(uuid())
+  aggregateId String
+  aggregateType String
+  eventType   String
+  payload     Json
+  status      String   @default("PENDING") // PENDING, PROCESSED, FAILED
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+  error       String?
 
   @@index([status, createdAt])
+  @@map("outbox")
 }

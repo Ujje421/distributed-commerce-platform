@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -8,93 +9,68 @@ datasource db {
 }
 
 model Product {
-  id          String           @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
-  description String           @db.Text
-  brand       String?
-  basePrice   Decimal          @db.Decimal(10, 2)
+  description String
+  price       Float
+  brand       String
+  sku         String   @unique
   categoryId  String
-  sellerId    String
-  status      ProductStatus    @default(DRAFT)
-  
-  category    Category         @relation(fields: [categoryId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id])
+  status      String   @default("ACTIVE") // ACTIVE, DRAFT, ARCHIVED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   variants    ProductVariant[]
   images      ProductImage[]
   
-  // Cache average rating from Review Service
-  avgRating   Decimal          @default(0) @db.Decimal(3, 2)
-  reviewCount Int              @default(0)
-
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  @@index([categoryId])
-  @@index([status])
-  @@index([sellerId])
+  @@map("products")
 }
 
 model Category {
   id          String     @id @default(uuid())
-  name        String     @unique
-  slug        String     @unique
+  name        String
   parentId    String?
   parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
-  
   products    Product[]
   
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  @@map("categories")
 }
 
 model ProductVariant {
-  id          String   @id @default(uuid())
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  sku         String   @unique
-  name        String   // e.g., "Red - Large"
-  price       Decimal? @db.Decimal(10, 2) // Optional override of basePrice
-  attributes  Json     // e.g., { "color": "red", "size": "L" }
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku       String   @unique
+  name      String   // e.g., "Size M - Red"
+  price     Float?   // Optional override for base price
   
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([productId])
+  @@map("product_variants")
 }
 
 model ProductImage {
-  id          String   @id @default(uuid())
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  url         String
-  isPrimary   Boolean  @default(false)
-  sortOrder   Int      @default(0)
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  isPrimary Boolean  @default(false)
+  order     Int      @default(0)
   
-  createdAt   DateTime @default(now())
-  
-  @@index([productId])
+  @@map("product_images")
 }
 
-// Outbox for Domain Events
 model Outbox {
-  id            String    @id @default(uuid())
-  eventType     String
-  topic         String
-  partitionKey  String
-  payload       String    @db.Text
-  correlationId String
-  status        String    @default("PENDING")
-  retryCount    Int       @default(0)
-  maxRetries    Int       @default(5)
-  error         String?   @db.Text
-  createdAt     DateTime  @default(now())
-  processedAt   DateTime?
+  id          String   @id @default(uuid())
+  aggregateId String
+  aggregateType String
+  eventType   String
+  payload     Json
+  status      String   @default("PENDING") // PENDING, PROCESSED, FAILED
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+  error       String?
 
   @@index([status, createdAt])
-}
-
-enum ProductStatus {
-  DRAFT
-  ACTIVE
-  ARCHIVED
+  @@map("outbox")
 }
