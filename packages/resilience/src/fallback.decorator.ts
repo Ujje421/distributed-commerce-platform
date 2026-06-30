@@ -5,7 +5,7 @@ import { Logger } from '@nestjs/common';
  */
 export function Fallback(fallbackMethodName: string) {
   return function (
-    target: any,
+    _target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
