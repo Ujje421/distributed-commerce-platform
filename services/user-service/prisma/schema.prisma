@@ -7,6 +7,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model UserProfile {
+  id          String    @id // Same ID as Identity Service user
+  email       String    @unique
+  firstName   String
+  lastName    String
+  phone       String?
+  preferences Json?     // Store user preferences like theme, language, etc.
+  
+  addresses   Address[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([email])
+}
+
+model Address {
+  id           String      @id @default(uuid())
+  userId       String
+  userProfile  UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  street       String
+  city         String
+  state        String
+  country      String
+  zipCode      String
+  isDefault    Boolean     @default(false)
+  
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([userId])
+}
+
 model Outbox {
   id            String    @id @default(uuid())
   eventType     String

@@ -1,5 +1,4 @@
 import { Module, Global } from '@nestjs/common';
-import { PrismaService } from '@ecommerce/database';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 

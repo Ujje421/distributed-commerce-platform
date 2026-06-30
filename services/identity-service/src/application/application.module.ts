@@ -3,7 +3,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { RegisterCommandHandler } from './commands/register.handler';
 
 const CommandHandlers = [RegisterCommandHandler];
-const QueryHandlers = [];
+const QueryHandlers: any[] = [];
 
 @Module({
   imports: [CqrsModule],
