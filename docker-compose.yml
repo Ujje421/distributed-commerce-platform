@@ -116,6 +116,51 @@ services:
     networks:
       - default
 
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: ecommerce_payment
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=development
+      - PORT=3007
+      - DATABASE_URL=postgresql://ecommerce:ecommerce_secret_2024@postgres:5432/payment_db?schema=public
+      - KAFKA_BROKERS=kafka:29092
+    networks:
+      - default
+
+  shipping-service:
+    build:
+      context: .
+      dockerfile: services/shipping-service/Dockerfile
+    container_name: ecommerce_shipping
+    ports:
+      - "3008:3008"
+    environment:
+      - NODE_ENV=development
+      - PORT=3008
+      - DATABASE_URL=postgresql://ecommerce:ecommerce_secret_2024@postgres:5432/shipping_db?schema=public
+      - KAFKA_BROKERS=kafka:29092
+    networks:
+      - default
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    container_name: ecommerce_notification
+    ports:
+      - "3009:3009"
+    environment:
+      - NODE_ENV=development
+      - PORT=3009
+      - DATABASE_URL=postgresql://ecommerce:ecommerce_secret_2024@postgres:5432/notification_db?schema=public
+      - KAFKA_BROKERS=kafka:29092
+    networks:
+      - default
+
   recommendation-service:
     build:
       context: .
