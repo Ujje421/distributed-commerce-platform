@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package ecommerce.common;
+
+message PaginationRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message PaginationMeta {
+  int32 total = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  int32 total_pages = 4;
+  bool has_next = 5;
+  bool has_previous = 6;
+}
+
+message ErrorResponse {
+  int32 status_code = 1;
+  string message = 2;
+  string error = 3;
+  string correlation_id = 4;
+}
+
+message Empty {}

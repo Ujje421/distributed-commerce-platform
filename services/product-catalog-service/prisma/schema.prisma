@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String           @id @default(uuid())
+  name        String
+  description String           @db.Text
+  brand       String?
+  basePrice   Decimal          @db.Decimal(10, 2)
+  categoryId  String
+  sellerId    String
+  status      ProductStatus    @default(DRAFT)
+  
+  category    Category         @relation(fields: [categoryId], references: [id])
+  variants    ProductVariant[]
+  images      ProductImage[]
+  
+  // Cache average rating from Review Service
+  avgRating   Decimal          @default(0) @db.Decimal(3, 2)
+  reviewCount Int              @default(0)
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([sellerId])
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  slug        String     @unique
+  parentId    String?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  
+  products    Product[]
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model ProductVariant {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku         String   @unique
+  name        String   // e.g., "Red - Large"
+  price       Decimal? @db.Decimal(10, 2) // Optional override of basePrice
+  attributes  Json     // e.g., { "color": "red", "size": "L" }
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([productId])
+}
+
+model ProductImage {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url         String
+  isPrimary   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([productId])
+}
+
+// Outbox for Domain Events
+model Outbox {
+  id            String    @id @default(uuid())
+  eventType     String
+  topic         String
+  partitionKey  String
+  payload       String    @db.Text
+  correlationId String
+  status        String    @default("PENDING")
+  retryCount    Int       @default(0)
+  maxRetries    Int       @default(5)
+  error         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  processedAt   DateTime?
+
+  @@index([status, createdAt])
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}

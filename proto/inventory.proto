@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package ecommerce.inventory;
+
+import "common.proto";
+
+service InventoryService {
+  rpc CheckAvailability(CheckAvailabilityRequest) returns (CheckAvailabilityResponse) {}
+  rpc ReserveStock(ReserveStockRequest) returns (ReserveStockResponse) {}
+  rpc ReleaseStock(ReleaseStockRequest) returns (ReleaseStockResponse) {}
+}
+
+message InventoryItem {
+  string product_id = 1;
+  string sku = 2;
+  int32 quantity = 3;
+}
+
+message CheckAvailabilityRequest {
+  repeated InventoryItem items = 1;
+}
+
+message CheckAvailabilityResponse {
+  bool is_available = 1;
+  repeated InventoryItem unavailable_items = 2;
+}
+
+message ReserveStockRequest {
+  string order_id = 1;
+  repeated InventoryItem items = 2;
+}
+
+message ReserveStockResponse {
+  bool success = 1;
+  string reservation_id = 2;
+  repeated InventoryItem failed_items = 3;
+}
+
+message ReleaseStockRequest {
+  string reservation_id = 1;
+  string order_id = 2;
+}
+
+message ReleaseStockResponse {
+  bool success = 1;
+}

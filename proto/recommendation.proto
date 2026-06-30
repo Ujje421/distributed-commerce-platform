@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package ecommerce.recommendation;
+
+import "common.proto";
+
+service RecommendationService {
+  rpc GetPersonalizedRecommendations(RecommendationRequest) returns (RecommendationResponse) {}
+  rpc GetSimilarProducts(SimilarProductsRequest) returns (RecommendationResponse) {}
+  rpc GetFrequentlyBoughtTogether(BoughtTogetherRequest) returns (RecommendationResponse) {}
+  rpc GetTrendingProducts(TrendingRequest) returns (RecommendationResponse) {}
+}
+
+message RecommendationRequest {
+  string user_id = 1;
+  int32 limit = 2;
+}
+
+message SimilarProductsRequest {
+  string product_id = 1;
+  int32 limit = 2;
+}
+
+message BoughtTogetherRequest {
+  string product_id = 1;
+  int32 limit = 2;
+}
+
+message TrendingRequest {
+  string category_id = 1; // optional
+  int32 limit = 2;
+}
+
+message RecommendedProduct {
+  string product_id = 1;
+  double score = 2;
+  string reason = 3; // e.g., "collaborative_filtering", "trending", "similar_to_X"
+}
+
+message RecommendationResponse {
+  repeated RecommendedProduct products = 1;
+  string correlation_id = 2;
+}

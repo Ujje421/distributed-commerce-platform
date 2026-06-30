@@ -1,0 +1,61 @@
+{
+  "name": "event-driven-ecommerce-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-grade event-driven e-commerce platform with microservices architecture",
+  "author": "Senior Backend Engineer",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:packages": "npm run build -w packages/common -w packages/database -w packages/kafka -w packages/resilience -w packages/observability",
+    "dev:gateway": "npm run start:dev -w services/api-gateway",
+    "dev:identity": "npm run start:dev -w services/identity-service",
+    "dev:user": "npm run start:dev -w services/user-service",
+    "dev:product": "npm run start:dev -w services/product-catalog-service",
+    "dev:inventory": "npm run start:dev -w services/inventory-service",
+    "dev:cart": "npm run start:dev -w services/cart-service",
+    "dev:order": "npm run start:dev -w services/order-service",
+    "dev:payment": "npm run start:dev -w services/payment-service",
+    "dev:shipping": "npm run start:dev -w services/shipping-service",
+    "dev:notification": "npm run start:dev -w services/notification-service",
+    "dev:review": "npm run start:dev -w services/review-service",
+    "test": "npm run test --workspaces --if-present",
+    "test:integration": "npm run test:integration --workspaces --if-present",
+    "test:e2e": "jest --config tests/e2e/jest.config.ts",
+    "lint": "eslint \"packages/**/*.ts\" \"services/**/*.ts\" --fix",
+    "format": "prettier --write \"packages/**/*.ts\" \"services/**/*.ts\"",
+    "docker:infra": "docker-compose -f docker-compose.infra.yml up -d",
+    "docker:infra:down": "docker-compose -f docker-compose.infra.yml down",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "prisma:migrate": "npm run prisma:migrate --workspaces --if-present",
+    "prisma:generate": "npm run prisma:generate --workspaces --if-present",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.0",
+    "husky": "^9.1.0",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.3.0",
+    "typescript": "^5.5.0"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}

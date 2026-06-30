@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String?        // Nullable for OAuth users
+  firstName     String
+  lastName      String
+  roles         String[]       @default(["CUSTOMER"]) // Use string array instead of enum for flexibility
+  status        UserStatus     @default(ACTIVE)
+  mfaEnabled    Boolean        @default(false)
+  mfaSecret     String?
+  loginMethods  LoginMethod[]  // Array of enums (CREDENTIALS, GOOGLE, GITHUB)
+  
+  refreshTokens RefreshToken[]
+  apiKeys       ApiKey[]
+  sessions      Session[]
+  
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique // Hashed version of the refresh token
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device    String?  // Device/User-Agent identifier
+  ipAddress String?
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+}
+
+model ApiKey {
+  id          String    @id @default(uuid())
+  name        String
+  keyHash     String    @unique // Hashed API key
+  prefix      String    // First few chars to identify key without exposing full hash
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roles       String[]  // Scopes/roles assigned to this key
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  isRevoked   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device    String?
+  ipAddress String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+}
+
+// Outbox pattern table
+model Outbox {
+  id            String    @id @default(uuid())
+  eventType     String
+  topic         String
+  partitionKey  String
+  payload       String    @db.Text
+  correlationId String
+  status        String    @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED, DEAD_LETTER
+  retryCount    Int       @default(0)
+  maxRetries    Int       @default(5)
+  error         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  processedAt   DateTime?
+
+  @@index([status, createdAt])
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+enum LoginMethod {
+  CREDENTIALS
+  GOOGLE
+  GITHUB
+}

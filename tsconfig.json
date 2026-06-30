@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ecommerce/common": ["packages/common/src"],
+      "@ecommerce/common/*": ["packages/common/src/*"],
+      "@ecommerce/kafka": ["packages/kafka/src"],
+      "@ecommerce/kafka/*": ["packages/kafka/src/*"],
+      "@ecommerce/database": ["packages/database/src"],
+      "@ecommerce/database/*": ["packages/database/src/*"],
+      "@ecommerce/resilience": ["packages/resilience/src"],
+      "@ecommerce/resilience/*": ["packages/resilience/src/*"],
+      "@ecommerce/observability": ["packages/observability/src"],
+      "@ecommerce/observability/*": ["packages/observability/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
+}
