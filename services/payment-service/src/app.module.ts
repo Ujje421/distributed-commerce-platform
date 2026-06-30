@@ -1,12 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { CqrsModule } from '@nestjs/cqrs';
 import { KafkaModule } from '@ecommerce/kafka';
+import { DatabaseModule } from './infrastructure/persistence/database.module';
+import { PaymentService } from './application/services/payment.service';
+import { PaymentInitiatedConsumer } from './application/consumers/payment-initiated.consumer';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '../../.env' }),
-    CqrsModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '../../.env',
+    }),
+    DatabaseModule,
     KafkaModule.forRootAsync({
       useFactory: () => ({
         clientId: 'payment-service',
@@ -15,5 +20,6 @@ import { KafkaModule } from '@ecommerce/kafka';
       }),
     }),
   ],
+  providers: [PaymentService, PaymentInitiatedConsumer],
 })
 export class AppModule {}

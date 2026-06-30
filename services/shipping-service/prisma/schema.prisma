@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -7,19 +8,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Shipment {
+  id            String   @id @default(uuid())
+  orderId       String   @unique
+  trackingCode  String?  @unique
+  status        String   @default("CREATED") // CREATED, IN_TRANSIT, DELIVERED, EXCEPTION
+  courier       String?
+  address       Json
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([orderId, trackingCode])
+  @@map("shipments")
+}
+
 model Outbox {
-  id            String    @id @default(uuid())
+  id            String   @id @default(uuid())
+  aggregateId   String
+  aggregateType String
   eventType     String
-  topic         String
-  partitionKey  String
-  payload       String    @db.Text
-  correlationId String
-  status        String    @default("PENDING")
-  retryCount    Int       @default(0)
-  maxRetries    Int       @default(5)
-  error         String?   @db.Text
-  createdAt     DateTime  @default(now())
+  payload       Json
+  status        String   @default("PENDING") // PENDING, PROCESSED, FAILED
+  createdAt     DateTime @default(now())
   processedAt   DateTime?
+  error         String?
 
   @@index([status, createdAt])
+  @@map("outbox")
 }
