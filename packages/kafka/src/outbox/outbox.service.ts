@@ -1,11 +1,9 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventType, IEventPayload, KAFKA_TOPICS, OutboxMessageStatus } from '@ecommerce/common';
 import { v4 as uuidv4 } from 'uuid';
-import { OutboxModuleOptions } from './outbox.module';
 
 @Injectable()
 export class OutboxService {
-  private readonly logger = new Logger(OutboxService.name);
 
   constructor(
     // We inject Prisma dynamically based on the service using this module

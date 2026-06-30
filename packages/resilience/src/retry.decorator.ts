@@ -24,7 +24,7 @@ export function Retry(options: Partial<RetryOptions> = {}) {
   const retryableErrors = options.retryableErrors;
 
   return function (
-    target: any,
+    _target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {

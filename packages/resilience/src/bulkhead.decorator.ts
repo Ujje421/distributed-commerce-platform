@@ -13,7 +13,7 @@ export class BulkheadRejectionError extends Error {
  */
 export function Bulkhead(maxConcurrent: number, maxQueueSize: number = 0) {
   return function (
-    target: any,
+    _target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
