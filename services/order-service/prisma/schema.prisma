@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -7,81 +8,66 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==========================================
-// Event Sourcing - Write Model
-// ==========================================
-model OrderEvent {
+model Order {
   id            String   @id @default(uuid())
-  aggregateId   String   // The Order ID
-  version       Int      // Sequence number for optimistic concurrency
-  eventType     String   // e.g., ORDER_PLACED, ORDER_CONFIRMED, ORDER_CANCELLED
-  payload       String   @db.Text
+  userId        String
+  status        String   @default("PENDING") // PENDING, INVENTORY_RESERVED, PAYMENT_PROCESSING, CONFIRMED, SHIPPING, DELIVERED, CANCELLED
+  totalAmount   Float
+  currency      String   @default("USD")
+  
+  shippingAddress Json?
+  billingAddress  Json?
+  
+  version       Int      @default(1)
   createdAt     DateTime @default(now())
-  correlationId String?
+  updatedAt     DateTime @updatedAt
 
-  @@unique([aggregateId, version]) // Ensures strict ordering and prevents concurrent writes
-  @@index([aggregateId])
-}
-
-// Optional Snapshot table for performance on large aggregates
-model OrderSnapshot {
-  aggregateId   String   @id
-  version       Int
-  state         String   @db.Text
-  createdAt     DateTime @default(now())
-}
-
-// ==========================================
-// CQRS - Read Model
-// ==========================================
-model OrderReadModel {
-  id               String   @id
-  userId           String
-  status           String   // PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
-  totalAmount      Decimal  @db.Decimal(10, 2)
-  currency         String
-  items            Json     // Denormalized array of items
-  shippingAddress  Json     // Denormalized address
-  placedAt         DateTime
-  updatedAt        DateTime @updatedAt
+  items         OrderItem[]
+  events        OrderEvent[]
 
   @@index([userId])
   @@index([status])
+  @@map("orders")
 }
 
-// ==========================================
-// Saga Orchestration State
-// ==========================================
-model SagaContext {
-  sagaId          String   @id @default(uuid())
-  orderId         String   @unique
-  sagaType        String   @default("ORDER_FULFILLMENT")
-  status          String   // STARTED, IN_PROGRESS, COMPLETED, COMPENSATING, COMPENSATED, FAILED
-  currentStep     Int      @default(0)
-  state           Json     // Stores step results and compensation data
-  correlationId   String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  sku       String
+  name      String
+  quantity  Int
+  price     Float
   
-  @@index([status])
+  @@map("order_items")
 }
 
-// ==========================================
-// Standard Outbox for reliable event publishing
-// ==========================================
-model Outbox {
-  id            String    @id @default(uuid())
+// Event Store for Event Sourcing
+model OrderEvent {
+  id            String   @id @default(uuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   eventType     String
-  topic         String
-  partitionKey  String
-  payload       String    @db.Text
-  correlationId String
-  status        String    @default("PENDING")
-  retryCount    Int       @default(0)
-  maxRetries    Int       @default(5)
-  error         String?   @db.Text
-  createdAt     DateTime  @default(now())
+  payload       Json
+  version       Int      // Sequence number of the event for this order
+  createdAt     DateTime @default(now())
+
+  @@unique([orderId, version])
+  @@map("order_events")
+}
+
+model Outbox {
+  id            String   @id @default(uuid())
+  aggregateId   String
+  aggregateType String
+  eventType     String
+  payload       Json
+  status        String   @default("PENDING") // PENDING, PROCESSED, FAILED
+  createdAt     DateTime @default(now())
   processedAt   DateTime?
+  error         String?
 
   @@index([status, createdAt])
+  @@map("outbox")
 }

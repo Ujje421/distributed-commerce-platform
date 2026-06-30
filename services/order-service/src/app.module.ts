@@ -1,34 +1,10 @@
-import { Module, Global, Injectable } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CqrsModule } from '@nestjs/cqrs';
-import { KafkaModule, OutboxModule } from '@ecommerce/kafka';
-import { PrismaClient } from '@prisma/client';
-
-@Injectable()
-export class OrderPrismaService extends PrismaClient {
-  constructor(config: ConfigService) {
-    super({
-      datasources: {
-        db: {
-          url: config.get<string>('DATABASE_URL'),
-        },
-      },
-    });
-  }
-}
-
-@Global()
-@Module({
-  providers: [
-    {
-      provide: 'PrismaService',
-      useClass: OrderPrismaService,
-    },
-    OrderPrismaService
-  ],
-  exports: ['PrismaService', OrderPrismaService],
-})
-export class DatabaseModule {}
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { KafkaModule } from '@ecommerce/kafka';
+import { DatabaseModule } from './infrastructure/persistence/database.module';
+import { OrderService } from './application/services/order.service';
+import { OrderController } from './presentation/controllers/order.controller';
+import { OrderSaga } from './application/sagas/order.saga';
 
 @Module({
   imports: [
@@ -36,7 +12,6 @@ export class DatabaseModule {}
       isGlobal: true,
       envFilePath: '../../.env',
     }),
-    CqrsModule,
     DatabaseModule,
     KafkaModule.forRootAsync({
       useFactory: () => ({
@@ -45,12 +20,8 @@ export class DatabaseModule {}
         groupId: 'ecommerce-order-group',
       }),
     }),
-    OutboxModule.register({
-      prismaServiceToken: 'PrismaService',
-      pollIntervalMs: 2000,
-      batchSize: 100,
-    }),
-    // Application components would be imported here
   ],
+  controllers: [OrderController],
+  providers: [OrderService, OrderSaga],
 })
 export class AppModule {}
