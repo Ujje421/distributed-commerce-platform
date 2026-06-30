@@ -20,12 +20,12 @@ export function Fallback(fallbackMethodName: string) {
           `Method ${propertyKey} failed. Executing fallback method ${fallbackMethodName}. Error: ${(error as Error).message}`
         );
         
-        if (typeof this[fallbackMethodName] !== 'function') {
+        if (typeof (this as any)[fallbackMethodName] !== 'function') {
           logger.error(`Fallback method ${fallbackMethodName} not found on class`);
           throw error;
         }
 
-        return this[fallbackMethodName].apply(this, [...args, error]);
+        return (this as any)[fallbackMethodName].apply(this, [...args, error]);
       }
     };
 

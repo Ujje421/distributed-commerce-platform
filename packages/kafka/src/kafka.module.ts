@@ -40,8 +40,8 @@ export class KafkaModule {
   }
 
   static forRootAsync(options: {
-    useFactory: (...args: unknown[]) => Promise<KafkaModuleOptions> | KafkaModuleOptions;
-    inject?: unknown[];
+    useFactory: (...args: any[]) => Promise<KafkaModuleOptions> | KafkaModuleOptions;
+    inject?: any[];
   }): DynamicModule {
     return {
       module: KafkaModule,

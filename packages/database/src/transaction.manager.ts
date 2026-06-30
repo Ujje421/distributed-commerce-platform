@@ -15,7 +15,7 @@ export class TransactionManager {
    * Execute a block of operations within a Prisma transaction.
    */
   async execute<T>(action: (tx: TransactionDelegate) => Promise<T>): Promise<T> {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: TransactionDelegate) => {
       return action(tx);
     }, {
       maxWait: 5000, // 5s timeout to obtain transaction

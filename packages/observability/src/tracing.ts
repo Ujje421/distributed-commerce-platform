@@ -36,7 +36,7 @@ export function initTracing(serviceName: string): NodeSDK | undefined {
       deployment_environment: process.env.NODE_ENV || 'development',
     }),
     traceExporter,
-    metricReader,
+    metricReader: metricReader as any,
     instrumentations: [
       getNodeAutoInstrumentations({
         '@opentelemetry/instrumentation-fs': { enabled: false }, // Too noisy

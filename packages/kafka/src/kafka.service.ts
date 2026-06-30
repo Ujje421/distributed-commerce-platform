@@ -39,7 +39,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       clientId: options.clientId,
       brokers: options.brokers,
       ssl: options.ssl,
-      sasl: options.sasl,
+      sasl: options.sasl as any,
       logLevel: logLevel.WARN,
       retry: {
         initialRetryTime: options.retry?.initialRetryTime || 300,

@@ -30,22 +30,7 @@ export interface IEventPayload<T = unknown> {
   metadata?: Record<string, unknown>;
 }
 
-/**
- * Interface for outbox messages stored in the transactional outbox table.
- */
-export interface IOutboxMessage {
-  id: string;
-  eventType: EventType;
-  topic: string;
-  key: string;
-  payload: string;
-  correlationId: string;
-  createdAt: Date;
-  processedAt: Date | null;
-  retryCount: number;
-  maxRetries: number;
-  error: string | null;
-}
+
 
 /**
  * Options for publishing events.
